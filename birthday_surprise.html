@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Little Something For You</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #1a0b3d;
+    --bg-2: #4a0f9e;
+    --yellow: #ffe347;
+    --pink: #ff2e88;
+    --blue: #3dcbff;
+    --purple: #b14eff;
+    --orange: #ff8a3d;
+    --ink: #ffffff;
+    --muted: #d9c9ff;
+    --card: rgba(255,255,255,0.07);
+    --card-border: rgba(255,255,255,0.16);
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:
+      radial-gradient(circle at 15% 10%, rgba(255,46,136,0.35), transparent 45%),
+      radial-gradient(circle at 85% 20%, rgba(61,203,255,0.3), transparent 45%),
+      radial-gradient(circle at 50% 90%, rgba(177,78,255,0.35), transparent 50%),
+      var(--bg);
+    font-family:'Nunito', sans-serif;
+    color: var(--ink);
+    overflow:hidden;
+  }
+  #stage{
+    position:relative;
+    width:100%;
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .screen{
+    position:absolute;
+    inset:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    opacity:0;
+    pointer-events:none;
+    transform: scale(0.96);
+    transition: opacity .5s ease, transform .5s ease;
+    text-align:center;
+  }
+  .screen.active{
+    opacity:1;
+    pointer-events:auto;
+    transform: scale(1);
+  }
+  .eyebrow{
+    font-family:'Nunito', sans-serif;
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    font-size:12px;
+    color: var(--blue);
+    margin-bottom:8px;
+    font-weight:800;
+  }
+  h1{
+    font-family:'Baloo 2', cursive;
+    font-weight:800;
+    font-size:clamp(28px, 6vw, 52px);
+    margin:0 0 12px 0;
+    line-height:1.1;
+  }
+  p.sub{
+    color: var(--muted);
+    font-size:16px;
+    max-width:420px;
+    margin:0 0 22px 0;
+  }
+  .card{
+    background: var(--card);
+    border:1px solid var(--card-border);
+    backdrop-filter: blur(6px);
+    border-radius:20px;
+    padding:28px 26px;
+    width:min(92vw, 380px);
+  }
+  input[type="date"]{
+    width:100%;
+    padding:14px 16px;
+    border-radius:12px;
+    border:1px solid var(--card-border);
+    background: rgba(255,255,255,0.09);
+    color: var(--ink);
+    font-family:'Nunito', sans-serif;
+    font-size:16px;
+    outline:none;
+    margin-bottom:8px;
+    color-scheme: dark;
+  }
+  input[type="date"]:focus{ border-color: var(--blue); }
+  .error-msg{
+    color: var(--pink);
+    font-size:13px;
+    font-weight:700;
+    min-height:18px;
+    margin-bottom:6px;
+  }
+  button{
+    font-family:'Baloo 2', cursive;
+    font-weight:700;
+    font-size:17px;
+    border:none;
+    border-radius:14px;
+    padding:14px 26px;
+    cursor:pointer;
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  button:focus-visible{ outline:3px solid var(--blue); outline-offset:2px; }
+  .btn-primary{
+    background: linear-gradient(135deg, var(--blue), #1a8fd1);
+    color: #05263a;
+    width:100%;
+    box-shadow: 0 8px 20px rgba(61,203,255,0.3);
+  }
+  .btn-primary:hover{ transform: translateY(-2px); }
+
+  /* ---- Mascot: original party blob character ---- */
+  .mascot{
+    position:relative;
+    width:110px;
+    height:110px;
+    margin: 0 auto 6px auto;
+    animation: bob 2.6s ease-in-out infinite;
+  }
+  @keyframes bob{
+    0%,100%{ transform: translateY(0) rotate(-2deg); }
+    50%{ transform: translateY(-10px) rotate(2deg); }
+  }
+  .mascot-body{
+    position:absolute;
+    bottom:0; left:50%;
+    transform: translateX(-50%);
+    width:88px; height:80px;
+    background: linear-gradient(160deg, var(--yellow), var(--orange));
+    border-radius: 50% 50% 46% 46% / 55% 55% 45% 45%;
+    box-shadow: 0 8px 18px rgba(255,138,61,0.35);
+  }
+  .mascot-eye{
+    position:absolute;
+    top:30px;
+    width:10px; height:12px;
+    background:#1a0b3d;
+    border-radius:50%;
+  }
+  .mascot-eye.left{ left:26px; }
+  .mascot-eye.right{ left:52px; }
+  .mascot-cheek{
+    position:absolute;
+    top:42px;
+    width:9px; height:6px;
+    background: var(--pink);
+    border-radius:50%;
+    opacity:0.6;
+  }
+  .mascot-cheek.left{ left:16px; }
+  .mascot-cheek.right{ left:63px; }
+  .mascot-mouth{
+    position:absolute;
+    top:44px; left:38px;
+    width:14px; height:8px;
+    border-bottom: 3px solid #1a0b3d;
+    border-radius: 0 0 12px 12px;
+  }
+  .mascot-hat{
+    position:absolute;
+    top:-26px; left:50%;
+    transform: translateX(-50%) rotate(8deg);
+    width:0; height:0;
+    border-left: 18px solid transparent;
+    border-right: 18px solid transparent;
+    border-bottom: 34px solid var(--purple);
+  }
+  .mascot-hat::after{
+    content:'';
+    position:absolute;
+    top:-40px; left:-4px;
+    width:8px; height:8px;
+    background: var(--yellow);
+    border-radius:50%;
+  }
+  .mascot-arm{
+    position:absolute;
+    top:44px; right:-6px;
+    width:22px; height:6px;
+    background: var(--orange);
+    border-radius:6px;
+    transform-origin: left center;
+    animation: wave 1.4s ease-in-out infinite;
+  }
+  @keyframes wave{
+    0%,100%{ transform: rotate(0deg); }
+    50%{ transform: rotate(-45deg); }
+  }
+  .mascot-speech{
+    position:relative;
+    display:inline-block;
+    background:#fff;
+    color:#1a0b3d;
+    font-family:'Baloo 2', cursive;
+    font-weight:700;
+    font-size:13px;
+    padding:8px 14px;
+    border-radius:14px;
+    margin-bottom:10px;
+    min-height:18px;
+  }
+  .mascot-speech::after{
+    content:'';
+    position:absolute;
+    bottom:-8px; left:50%;
+    transform: translateX(-50%);
+    border-left:8px solid transparent;
+    border-right:8px solid transparent;
+    border-top:8px solid #fff;
+  }
+
+  /* ---- Screen 2: gift question ---- */
+  .gift-box{
+    font-size: 68px;
+    margin-bottom: 4px;
+    animation: wiggle 2.2s ease-in-out infinite;
+  }
+  @keyframes wiggle{
+    0%,100%{ transform: rotate(-6deg) scale(1); }
+    50%{ transform: rotate(6deg) scale(1.05); }
+  }
+  .choice-row{
+    position:relative;
+    display:flex;
+    gap:18px;
+    justify-content:center;
+    align-items:center;
+    width:min(92vw, 420px);
+    height:70px;
+    margin-top:6px;
+  }
+  .btn-yes{
+    background: linear-gradient(135deg, var(--yellow), var(--orange));
+    color:#3a2100;
+    padding:14px 34px;
+    box-shadow: 0 8px 20px rgba(255,138,61,0.35);
+  }
+  .btn-yes:hover{ transform: translateY(-2px) scale(1.04); }
+  .btn-no{
+    background: rgba(255,255,255,0.1);
+    color: var(--ink);
+    border:1px solid var(--card-border);
+    padding:14px 30px;
+    position:absolute;
+    left: 240px;
+    transition: left .18s ease, top .18s ease, transform .15s ease;
+  }
+  .shake{ animation: shake .4s ease; }
+  @keyframes shake{
+    0%,100%{ transform: translateX(0); }
+    20%{ transform: translateX(-8px); }
+    40%{ transform: translateX(8px); }
+    60%{ transform: translateX(-6px); }
+    80%{ transform: translateX(6px); }
+  }
+  .dodge-msg{
+    position:absolute;
+    bottom:-46px;
+    font-size:13px;
+    color: var(--pink);
+    font-weight:700;
+    opacity:0;
+    transition: opacity .25s ease;
+  }
+  .dodge-msg.show{ opacity:1; }
+
+  /* ---- Screen 3: reveal ---- */
+  #screen-reveal h1{
+    background: linear-gradient(90deg, var(--yellow), var(--pink), var(--blue), var(--purple));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color: transparent;
+  }
+  .age-line{
+    font-family:'Baloo 2', cursive;
+    font-size:18px;
+    color: var(--yellow);
+    margin-bottom:4px;
+  }
+  .funny-msg{
+    font-size:15px;
+    color: var(--muted);
+    max-width:400px;
+    margin: 4px 0 22px 0;
+  }
+  .balloon{
+    position:absolute;
+    bottom:-120px;
+    width:46px;
+    height:58px;
+    border-radius:50% 50% 50% 50% / 60% 60% 40% 40%;
+    opacity:0.9;
+    animation-name: float-up;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+  }
+  .balloon::after{
+    content:'';
+    position:absolute;
+    bottom:-14px; left:50%;
+    width:1px; height:14px;
+    background: rgba(255,255,255,0.4);
+  }
+  .heart{
+    position:absolute;
+    bottom:-40px;
+    font-size: 20px;
+    opacity:0.9;
+    animation-name: heart-up;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+  }
+  @keyframes float-up{
+    to{ transform: translateY(-120vh) rotate(8deg); }
+  }
+  @keyframes heart-up{
+    0%{ transform: translateY(0) scale(0.8); opacity:0.9; }
+    100%{ transform: translateY(-100vh) scale(1.2); opacity:0; }
+  }
+  canvas#confetti-canvas{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:5;
+  }
+  .restart-link{
+    position:fixed;
+    bottom:14px;
+    right:16px;
+    background: rgba(255,255,255,0.06);
+    border:1px solid rgba(255,255,255,0.12);
+    color: var(--muted);
+    font-family:'Nunito', sans-serif;
+    font-weight:700;
+    font-size:11px;
+    padding:6px 12px;
+    border-radius:20px;
+    cursor:pointer;
+    opacity:0.35;
+    transition: opacity .25s ease, transform .2s ease;
+  }
+  .restart-link:hover, .restart-link:focus-visible{
+    opacity:1;
+    transform: translateY(-2px);
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas"></canvas>
+
+<div id="stage">
+
+  <!-- SCREEN 1: DOB entry -->
+  <div class="screen active" id="screen-dob">
+    <div class="mascot" aria-hidden="true">
+      <div class="mascot-hat"></div>
+      <div class="mascot-body">
+        <div class="mascot-eye left"></div>
+        <div class="mascot-eye right"></div>
+        <div class="mascot-cheek left"></div>
+        <div class="mascot-cheek right"></div>
+        <div class="mascot-mouth"></div>
+      </div>
+      <div class="mascot-arm"></div>
+    </div>
+    <div class="eyebrow">Step 1 of 2</div>
+    <h1>Before we begin...</h1>
+    <p class="sub">Enter your date of birth to unlock what's waiting for you.</p>
+    <div class="card">
+      <input type="date" id="dob-input" aria-label="Date of birth">
+      <div class="error-msg" id="dob-error"></div>
+      <button class="btn-primary" id="dob-continue">Continue →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: Gift question -->
+  <div class="screen" id="screen-gift">
+    <div class="mascot-speech" id="mascot-speech">pick wisely...</div>
+    <div class="gift-box">🎁</div>
+    <div class="eyebrow">Step 2 of 2</div>
+    <h1>Do you want a gift?</h1>
+    <p class="sub">Choose wisely.</p>
+    <div class="choice-row" id="choice-row">
+      <button class="btn-yes" id="btn-yes">Yes, obviously!</button>
+      <button class="btn-no" id="btn-no">No</button>
+      <div class="dodge-msg" id="dodge-msg"></div>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: Reveal -->
+  <div class="screen" id="screen-reveal">
+    <div class="eyebrow">Surprise unlocked</div>
+    <div class="age-line" id="age-line"></div>
+    <h1>HAPPY BIRTHDAY! 🎉</h1>
+    <p class="funny-msg" id="funny-msg"></p>
+  </div>
+
+</div>
+
+<button class="restart-link" id="restart-btn">play again 🎈</button>
+
+<script>
+(function(){
+  const screens = {
+    dob: document.getElementById('screen-dob'),
+    gift: document.getElementById('screen-gift'),
+    reveal: document.getElementById('screen-reveal')
+  };
+  function showScreen(name){
+    Object.values(screens).forEach(s => s.classList.remove('active'));
+    screens[name].classList.add('active');
+  }
+
+  // ---- Screen 1: DOB ----
+  const dobInput = document.getElementById('dob-input');
+  const dobError = document.getElementById('dob-error');
+  const dobContinue = document.getElementById('dob-continue');
+  let storedDOB = null;
+
+  dobContinue.addEventListener('click', () => {
+    const val = dobInput.value;
+    if (!val){
+      dobError.textContent = "We need your date of birth to continue.";
+      dobInput.focus();
+      return;
+    }
+    const chosen = new Date(val + 'T00:00:00');
+    const today = new Date();
+    if (chosen > today){
+      dobError.textContent = "That date hasn't happened yet.";
+      return;
+    }
+    storedDOB = chosen;
+    dobError.textContent = "";
+    showScreen('gift');
+  });
+
+  // ---- Screen 2: gift Yes/No ----
+  const choiceRow = document.getElementById('choice-row');
+  const btnYes = document.getElementById('btn-yes');
+  const btnNo = document.getElementById('btn-no');
+  const dodgeMsg = document.getElementById('dodge-msg');
+  const mascotSpeech = document.getElementById('mascot-speech');
+  let dodgeCount = 0;
+
+  const taunts = [
+    "nope, try again 😏",
+    "not today!",
+    "you can't catch me 🏃",
+    "nice try though",
+    "keep dreaming",
+    "so close, yet so far",
+    "this button said no",
+    "gift declined the decline"
+  ];
+  const mascotLines = [
+    "pick wisely...",
+    "psst, Yes is right there",
+    "the gift is getting impatient",
+    "just saying, Yes works great",
+    "the No button is shy"
+  ];
+
+  function dodge(){
+    dodgeCount++;
+    const rowRect = choiceRow.getBoundingClientRect();
+    const btnRect = btnNo.getBoundingClientRect();
+    const maxLeft = rowRect.width - btnRect.width - 4;
+    const maxTop = rowRect.height - btnRect.height - 4;
+    const newLeft = Math.max(4, Math.random() * maxLeft);
+    const newTop = Math.max(4, Math.random() * maxTop);
+    btnNo.style.left = newLeft + 'px';
+    btnNo.style.top = newTop + 'px';
+    dodgeMsg.textContent = taunts[Math.floor(Math.random() * taunts.length)];
+    dodgeMsg.classList.add('show');
+    mascotSpeech.textContent = mascotLines[Math.floor(Math.random() * mascotLines.length)];
+    clearTimeout(dodge._t);
+    dodge._t = setTimeout(() => dodgeMsg.classList.remove('show'), 1200);
+  }
+
+  btnNo.addEventListener('mouseenter', dodge);
+  btnNo.addEventListener('touchstart', (e) => { e.preventDefault(); dodge(); }, {passive:false});
+  btnNo.addEventListener('click', (e) => {
+    e.preventDefault();
+    btnNo.classList.add('shake');
+    setTimeout(() => btnNo.classList.remove('shake'), 400);
+    dodge();
+  });
+
+  btnYes.addEventListener('click', () => {
+    buildReveal();
+    showScreen('reveal');
+    launchConfetti();
+    spawnBalloons();
+    spawnHearts();
+  });
+
+  // ---- Screen 3: reveal content ----
+  const ageLine = document.getElementById('age-line');
+  const funnyMsg = document.getElementById('funny-msg');
+  const funnyLines = [
+    "Hope your day has zero calories in the cake and unlimited hugs.",
+    "Warning: today may contain excessive amounts of cake and joy.",
+    "Older, wiser, and still the best excuse for cake on a weekday.",
+    "May your birthday be as extra as this webpage was to make.",
+    "Age is just a number. Cake is forever."
+  ];
+  function buildReveal(){
+    if (!storedDOB) return;
+    const today = new Date();
+    let age = today.getFullYear() - storedDOB.getFullYear();
+    const hasHadBirthdayThisYear =
+      (today.getMonth() > storedDOB.getMonth()) ||
+      (today.getMonth() === storedDOB.getMonth() && today.getDate() >= storedDOB.getDate());
+    if (!hasHadBirthdayThisYear) age--;
+    const turning = age + 1;
+    ageLine.textContent = `Turning ${turning} never looked this good 🎂`;
+    funnyMsg.textContent = funnyLines[Math.floor(Math.random() * funnyLines.length)];
+  }
+
+  document.getElementById('restart-btn').addEventListener('click', () => {
+    dobInput.value = '';
+    storedDOB = null;
+    dodgeCount = 0;
+    btnNo.style.left = '240px';
+    btnNo.style.top = '0px';
+    mascotSpeech.textContent = 'pick wisely...';
+    showScreen('dob');
+  });
+
+  // ---- Confetti ----
+  const canvas = document.getElementById('confetti-canvas');
+  const ctx = canvas.getContext('2d');
+  function resizeCanvas(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  const colors = ['#ffe347', '#ff2e88', '#3dcbff', '#b14eff', '#ff8a3d'];
+  let particles = [];
+  let confettiRunning = false;
+
+  function launchConfetti(){
+    particles = [];
+    for (let i = 0; i < 180; i++){
+      particles.push({
+        x: Math.random() * canvas.width,
+        y: -20 - Math.random() * canvas.height * 0.5,
+        r: 4 + Math.random() * 5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vy: 2 + Math.random() * 3,
+        vx: -1.5 + Math.random() * 3,
+        rot: Math.random() * 360,
+        vrot: -6 + Math.random() * 12
+      });
+    }
+    if (!confettiRunning){
+      confettiRunning = true;
+      requestAnimationFrame(animateConfetti);
+      setTimeout(() => { confettiRunning = false; }, 6000);
+    }
+  }
+
+  function animateConfetti(){
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vrot;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI / 180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r * 0.6);
+      ctx.restore();
+    });
+    particles = particles.filter(p => p.y < canvas.height + 20);
+    if (confettiRunning || particles.length > 0){
+      requestAnimationFrame(animateConfetti);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  }
+
+  // ---- Balloons ----
+  function spawnBalloons(){
+    const stage = document.getElementById('stage');
+    const balloonColors = ['#ff2e88', '#ffe347', '#3dcbff', '#b14eff'];
+    for (let i = 0; i < 8; i++){
+      const b = document.createElement('div');
+      b.className = 'balloon';
+      b.style.background = balloonColors[i % balloonColors.length];
+      b.style.left = (5 + Math.random() * 90) + 'vw';
+      b.style.animationDuration = (5 + Math.random() * 3) + 's';
+      b.style.animationDelay = (Math.random() * 1.5) + 's';
+      stage.appendChild(b);
+      setTimeout(() => b.remove(), 9000);
+    }
+  }
+
+  // ---- Hearts ----
+  function spawnHearts(){
+    const stage = document.getElementById('stage');
+    const heartEmojis = ['💛','💗','💙','💜','🧡'];
+    for (let i = 0; i < 14; i++){
+      const h = document.createElement('div');
+      h.className = 'heart';
+      h.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+      h.style.left = (5 + Math.random() * 90) + 'vw';
+      h.style.animationDuration = (4 + Math.random() * 3) + 's';
+      h.style.animationDelay = (Math.random() * 2) + 's';
+      stage.appendChild(h);
+      setTimeout(() => h.remove(), 9000);
+    }
+  }
+})();
+</script>
+
+</body>
+</html>
